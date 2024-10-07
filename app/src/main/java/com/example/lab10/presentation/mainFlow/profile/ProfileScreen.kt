@@ -69,14 +69,14 @@ fun ProfileScreen(
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Text(text = "Nombre:")
-            Text(text = "Juan Carlos Durini")
+            Text(text = "Anthony Lou Schwank")
         }
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Text(text = "Carné:")
-            Text(text = "1201613")
+            Text(text = "23410")
         }
         Spacer(modifier = Modifier.height(16.dp))
         OutlinedButton(onClick = onLogOutClick) {
