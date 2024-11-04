@@ -25,11 +25,7 @@ fun NavController.navigateToCharacterProfileScreen(
 fun NavGraphBuilder.characterProfileScreen(
     onNavigateBack: () -> Unit
 ) {
-    composable<CharacterProfileDestination> { backStackEntry ->
-        val destination: CharacterProfileDestination = backStackEntry.toRoute()
-        CharacterProfileRoute(
-            id = destination.characterId,
-            onNavigateBack = onNavigateBack
-        )
+    composable<CharacterProfileDestination> {
+        CharacterProfileRoute(onNavigateBack = onNavigateBack)
     }
 }

@@ -1,6 +1,5 @@
 package com.example.lab10.presentation.mainFlow.location.profile
 
-import android.content.res.Configuration
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -12,8 +11,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material3.Button
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -26,23 +23,23 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewParameter
+import androidx.compose.ui.tooling.preview.datasource.CollectionPreviewParameterProvider
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.lab10.data.model.Location
+import com.example.lab10.presentation.common.LoadingView
 import com.example.lab10.presentation.ui.theme.Lab10Theme
 
 @Composable
 fun LocationProfileRoute(
     onNavigateBack: () -> Unit,
-    viewModel: LocationProfileViewModel = viewModel()
+    viewModel: LocationProfileViewModel = viewModel(factory = LocationProfileViewModel.Factory)
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     LocationProfileScreen(
         state = state,
-        onGetInfoClick = {
-            viewModel.getLocationData()
-        },
         onNavigateBack = onNavigateBack
     )
 }
@@ -51,7 +48,6 @@ fun LocationProfileRoute(
 @Composable
 private fun LocationProfileScreen(
     state: LocationProfileState,
-    onGetInfoClick: () -> Unit,
     onNavigateBack: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -70,8 +66,7 @@ private fun LocationProfileScreen(
         )
         LocationProfileContent(
             location = state.data,
-            isLoading = state.loading,
-            onGetInfoClick = onGetInfoClick,
+            isLoading = state.isLoading,
             modifier = Modifier.fillMaxSize()
         )
 
@@ -82,25 +77,16 @@ private fun LocationProfileScreen(
 private fun LocationProfileContent(
     location: Location?,
     isLoading: Boolean,
-    onGetInfoClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Box(modifier = modifier) {
-        when {
-            isLoading -> {
-                Text("Cargando, paciente.")
-            }
-
-            location == null -> {
-                Button(
-                    onClick = onGetInfoClick,
-                    modifier = Modifier.align(Alignment.Center)
-                ) {
-                    Text("Obtener informacion")
-                }
-            }
-
-            else -> {
+        if (isLoading) {
+            LoadingView(
+                loadingText = "Obteniendo información",
+                modifier = Modifier.align(Alignment.Center)
+            )
+        } else {
+            location?.let {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -150,54 +136,26 @@ private fun LocationProfilePropItem(
     }
 }
 
-@Preview
-@Composable
-private fun PreviewLocationProfileScreen() {
-    Lab10Theme() {
-        Surface {
-            LocationProfileScreen(
-                state = LocationProfileState(
-                    loading = false,
-                    data = Location(1, "Earth (C-137)", "Planet", "Dimension C-137")
-                ),
-                onNavigateBack = { },
-                onGetInfoClick = { },
-                modifier = Modifier.fillMaxSize()
-            )
-        }
-    }
-}
+private class LocationProfileParameterProvider : CollectionPreviewParameterProvider<LocationProfileState>(
+    listOf(
+        LocationProfileState(),
+        LocationProfileState(
+            data = Location(id = 4458, name = "Christine Walls", type = "felis", dimension = "nam"),
+            isLoading = false
+        )
+    )
+)
 
 @Preview
 @Composable
-private fun PreviewLoadingLocationProfileScreen() {
+private fun PreviewLocationProfileScreen(
+    @PreviewParameter(LocationProfileParameterProvider::class) state: LocationProfileState
+) {
     Lab10Theme() {
         Surface {
             LocationProfileScreen(
-                state = LocationProfileState(
-                    loading = true,
-                    data = null
-                ),
+                state,
                 onNavigateBack = { },
-                onGetInfoClick = { },
-                modifier = Modifier.fillMaxSize()
-            )
-        }
-    }
-}
-
-@Preview
-@Composable
-private fun PreviewEmptyLocationProfileScreen() {
-    Lab10Theme() {
-        Surface {
-            LocationProfileScreen(
-                state = LocationProfileState(
-                    loading = false,
-                    data = null
-                ),
-                onNavigateBack = { },
-                onGetInfoClick = { },
                 modifier = Modifier.fillMaxSize()
             )
         }

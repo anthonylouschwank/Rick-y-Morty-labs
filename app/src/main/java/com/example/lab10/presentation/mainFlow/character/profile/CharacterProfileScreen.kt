@@ -24,23 +24,28 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewParameter
+import androidx.compose.ui.tooling.preview.datasource.CollectionPreviewParameterProvider
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.lab10.data.model.Character
 import com.example.lab10.data.source.CharacterDb
+import com.example.lab10.presentation.common.LoadingView
 import com.example.lab10.presentation.ui.theme.Lab10Theme
 
 @Composable
 fun CharacterProfileRoute(
-    id: Int,
-    onNavigateBack: () -> Unit
+    onNavigateBack: () -> Unit,
+    viewModel: CharacterProfileViewModel = viewModel(factory = CharacterProfileViewModel.Factory)
 ) {
-    val characterDb = CharacterDb()
-    val character = characterDb.getCharacterById(id)
+    val state by viewModel.state.collectAsStateWithLifecycle()
     CharacterProfileScreen(
-        character = character,
+        state = state,
         onNavigateBack = onNavigateBack,
         modifier = Modifier.fillMaxSize()
     )
@@ -49,7 +54,7 @@ fun CharacterProfileRoute(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun CharacterProfileScreen(
-    character: Character,
+    state: CharacterProfileState,
     onNavigateBack: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -66,49 +71,76 @@ private fun CharacterProfileScreen(
                 }
             }
         )
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 64.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            Spacer(modifier = Modifier.height(16.dp))
-            Box(
-                modifier = Modifier
-                    .size(200.dp)
-                    .background(MaterialTheme.colorScheme.secondaryContainer, shape = CircleShape)
-            ) {
-                Icon(
-                    Icons.Outlined.Person,
-                    contentDescription = "Person",
+        CharacterProfileContent(
+            character = state.data,
+            isLoading = state.isLoading,
+            modifier = Modifier.fillMaxSize()
+        )
+    }
+}
+
+@Composable
+private fun CharacterProfileContent(
+    character: Character?,
+    isLoading: Boolean,
+    modifier: Modifier = Modifier
+) {
+    Box(modifier = modifier) {
+        if (isLoading) {
+            LoadingView(
+                loadingText = "Obteniendo información",
+                modifier = Modifier.align(Alignment.Center)
+            )
+        } else {
+            character?.let {
+                Column(
                     modifier = Modifier
-                        .fillMaxSize()
-                        .padding(16.dp),
-                    tint = MaterialTheme.colorScheme.onSecondaryContainer
-                )
+                        .fillMaxWidth()
+                        .padding(horizontal = 64.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Box(
+                        modifier = Modifier
+                            .size(200.dp)
+                            .background(
+                                MaterialTheme.colorScheme.secondaryContainer,
+                                shape = CircleShape
+                            )
+                    ) {
+                        Icon(
+                            Icons.Outlined.Person,
+                            contentDescription = "Person",
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(16.dp),
+                            tint = MaterialTheme.colorScheme.onSecondaryContainer
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text(
+                        text = character.name,
+                        style = MaterialTheme.typography.titleLarge
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    CharacterProfilePropItem(
+                        title = "Species:",
+                        value = character.species,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    CharacterProfilePropItem(
+                        title = "Status:",
+                        value = character.status,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    CharacterProfilePropItem(
+                        title = "Gender:",
+                        value = character.gender,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
             }
-            Spacer(modifier = Modifier.height(16.dp))
-            Text(
-                text = character.name,
-                style = MaterialTheme.typography.titleLarge
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-            CharacterProfilePropItem(
-                title = "Species:",
-                value = character.species,
-                modifier = Modifier.fillMaxWidth()
-            )
-            CharacterProfilePropItem(
-                title = "Status:",
-                value = character.status,
-                modifier = Modifier.fillMaxWidth()
-            )
-            CharacterProfilePropItem(
-                title = "Gender:",
-                value = character.gender,
-                modifier = Modifier.fillMaxWidth()
-            )
         }
     }
 }
@@ -128,22 +160,32 @@ private fun CharacterProfilePropItem(
     }
 }
 
+private class CharacterProfileParameterProvider : CollectionPreviewParameterProvider<CharacterProfileState>(
+    listOf(
+        CharacterProfileState(),
+        CharacterProfileState(
+            isLoading = false,
+            data = Character(
+                id = 2565,
+                name = "Rick",
+                status = "Alive",
+                species = "Human",
+                gender = "Male",
+                image = ""
+            )
+        )
+    )
+)
+
 @Preview
-@Preview(uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
-private fun PreviewCharacterProfileScreen() {
+private fun PreviewCharacterProfileScreen(
+    @PreviewParameter(CharacterProfileParameterProvider::class) state: CharacterProfileState
+) {
     Lab10Theme {
         Surface {
             CharacterProfileScreen(
-                character = Character(
-                    id = 2565,
-                    name = "Rick",
-                    status = "Alive",
-                    species = "Human",
-                    gender = "Male",
-                    image = ""
-
-                ),
+                state = state,
                 onNavigateBack = { },
                 modifier = Modifier.fillMaxSize()
             )

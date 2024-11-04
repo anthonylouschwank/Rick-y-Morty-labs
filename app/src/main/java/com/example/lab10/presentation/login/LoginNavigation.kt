@@ -12,7 +12,7 @@ fun NavGraphBuilder.loginScreen(
 ) {
     composable<LoginDestination> {
         LoginRoute(
-            onLoginClick = onLoginClick,
+            onSuccessfulLogin = onLoginClick,
         )
     }
 }

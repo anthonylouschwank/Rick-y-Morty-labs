@@ -10,36 +10,30 @@ import com.example.lab10.presentation.login.LoginDestination
 import com.example.lab10.presentation.login.loginScreen
 import com.example.lab10.presentation.mainFlow.mainNavigationGraph
 import com.example.lab10.presentation.mainFlow.navigateToMainGraph
-import androidx.lifecycle.viewmodel.compose.viewModel
 
 @Composable
 fun AppNavigation(
     modifier: Modifier = Modifier,
-    navController: NavHostController = rememberNavController(),
-    viewModel: NavigationViewModel = viewModel()
+    navController: NavHostController = rememberNavController()
 ) {
     NavHost(
         navController = navController,
         startDestination = LoginDestination,
         modifier = modifier
     ) {
-
         loginScreen(
             onLoginClick = {
-
                 navController.navigateToMainGraph(
-                    navOptions = NavOptions.Builder()
-                        .setPopUpTo(LoginDestination, inclusive = true)
-                        .build()
+                    navOptions = NavOptions.Builder().setPopUpTo<LoginDestination>(
+                        inclusive = true
+                    ).build()
                 )
             }
         )
-
         mainNavigationGraph(
             onLogOutClick = {
-                // Cuando el usuario hace logout, navegar de regreso al Login
                 navController.navigate(LoginDestination) {
-                    popUpTo(0) // Eliminar toda la pila de navegación
+                    popUpTo(0)
                 }
             }
         )

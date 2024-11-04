@@ -1,6 +1,5 @@
 package com.example.lab10.presentation.mainFlow
 
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
@@ -25,14 +24,12 @@ import com.example.lab10.presentation.mainFlow.character.characterGraph
 import com.example.lab10.presentation.mainFlow.location.locationsGraph
 import com.example.lab10.presentation.mainFlow.profile.profileScreen
 import com.example.lab10.presentation.navigation.BottomNavBar
-import com.example.lab10.presentation.navigation.NavigationViewModel
 import com.example.lab10.presentation.navigation.topLevelDestinations
 
 @Composable
 fun MainFlowScreen(
     onLogOutClick: () -> Unit,
-    navController: NavHostController = rememberNavController(),
-    viewModel: NavigationViewModel = viewModel()
+    navController: NavHostController = rememberNavController()
 ) {
     var bottomBarVisible by rememberSaveable {
         mutableStateOf(false)
@@ -75,29 +72,25 @@ fun MainFlowScreen(
                         Si el destino actual es cualquiera de esos, entonces nuestro ejemplo retornaría
                         true.
                      */
-                    viewModel = viewModel,
-                    
                     checkItemSelected = { destination ->
                         currentDestination?.hierarchy?.any { it.hasRoute(destination::class) } ?: false
                     },
                     onNavItemClick = { destination ->
-                        viewModel.navigateWithDelay(4000L) {
-                            navController.navigate(destination) {
-                                /*
-                                    Estas líneas nos permiten lograr lo siguiente:
-                                    * No almacenamos múltiples instancias de la misma pantalla en
-                                    nuestro backstack
-                                    * Si estamos en Characters y hacemos click en ese elemento nuevamente,
-                                    no creará una nueva pantalla
-                                    * Si regresamos a Characters luego de estar en Locations, el estado
-                                    de Characters será recuperado.
-                                 */
-                                popUpTo(navController.graph.findStartDestination().id) {
-                                    saveState = true
-                                }
-                                launchSingleTop = true
-                                restoreState = true
+                        navController.navigate(destination) {
+                            /*
+                                Estas líneas nos permiten lograr lo siguiente:
+                                * No almacenamos múltiples instancias de la misma pantalla en
+                                nuestro backstack
+                                * Si estamos en Characters y hacemos click en ese elemento nuevamente,
+                                no creará una nueva pantalla
+                                * Si regresamos a Characters luego de estar en Locations, el estado
+                                de Characters será recuperado.
+                             */
+                            popUpTo(navController.graph.findStartDestination().id) {
+                                saveState = true
                             }
+                            launchSingleTop = true
+                            restoreState = true
                         }
                     }
                 )
